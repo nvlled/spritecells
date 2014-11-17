@@ -140,14 +140,14 @@
         return bind({
             isMouseDown : false,
             mousemove : function(e) {
-                var pos = windowToCanvas(e.clientX, e.clientY);
                 if (!this.isMouseDown)
                     return;
+                var pos = eToCanvas(e);
                 image.moveAt(pos.x, pos.y);
                 image.draw(context);
             },
             mousedown : function(e) {
-                var pos = windowToCanvas(e.clientX, e.clientY);
+                var pos = eToCanvas(e);
                 image.moveAt(pos.x, pos.y);
                 this.isMouseDown = true;
             },
@@ -189,6 +189,10 @@
             x: (x - rect.left),
             y: (y - rect.top)
         }
+    }
+
+    function eToCanvas(e) {
+        return windowToCanvas(e.clientX, e.clientY);
     }
 
     // each handlers may need to keep individual states

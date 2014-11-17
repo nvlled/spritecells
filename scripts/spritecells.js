@@ -8,7 +8,9 @@
     var context;
     var image;
     var inputState;
-    var cells;
+
+    var protocell;
+    var cells = [];
 
     function load() {
         initCanvas();
@@ -25,7 +27,13 @@
         function drawLoop(dt) {
             context.clearRect(0, 0, canvas.width, canvas.height);
             image.draw(context);
+            cells.forEach(function(cell) {
+                cell.draw(context);
+            });
+            if (protocell)
+                protocell.draw(context, "rgba(120, 0, 0, 0.5)");
             // TODO: draw borders around the image
+
             mozRequestAnimationFrame(drawLoop);
         }
     }
@@ -54,6 +62,7 @@
     function initHandlers() {
         inputState = new types.InputState(canvas);
         inputState.add("image", imageInputHandler())
+        inputState.add("create-cell", cellCreateInputHandler())
     }
 
     function initToolbar() {
@@ -136,6 +145,38 @@
         localStorage[LSKEY] = JSON.stringify(state);
     }
 
+    function cellCreateInputHandler() {
+        return bind({
+            isMouseDown : false,
+            mousedown : function(e) {
+                var pos = eToCanvas(e);
+                this.isMouseDown = true;
+                protocell = new types.Cell("creating", {
+                    top : pos.y,
+                    left : pos.x,
+                    right : pos.x,
+                    bottom : pos.y,
+                });
+            },
+            mouseup : function(e) {
+                var pos = eToCanvas(e);
+                this.isMouseDown = false;
+                protocell.sortPoints();
+                protocell.label = "cell-"+cells.length;
+                cells.push(protocell);
+                protocell = null;
+            },
+            mousemove : function(e) {
+                if (!this.isMouseDown)
+                    return;
+                console.log("you sock");
+                var pos = eToCanvas(e);
+                protocell.right = pos.x;
+                protocell.bottom = pos.y;
+            },
+        });
+    }
+
     function imageInputHandler() {
         return bind({
             isMouseDown : false,
@@ -163,6 +204,8 @@
             },
         });
     }
+
+    // utils --------------------------------
 
     function bind(obj) {
         for (var k in obj) {

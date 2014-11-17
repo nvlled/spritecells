@@ -68,7 +68,17 @@
         },
         toString: function() {
             return this.left+","+this.top+","+this.right+","+this.bottom;
-        }
+        },
+        sortPoints : function() {
+            var top = this.top;
+            var left = this.left;
+            var right = this.right;
+            var bottom = this.bottom;
+            this.top = Math.min(top, bottom);
+            this.left = Math.min(left, right);
+            this.right = Math.max(left, right);
+            this.bottom = Math.max(top, bottom);
+        },
     }
 
     function Image(image, x, y) {

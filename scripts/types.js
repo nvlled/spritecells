@@ -1,29 +1,46 @@
 (function(root) {
 
-    function Cell(label, box) {
+    function Cell(label, box, transformation) {
         this.label = label;
         this.top = Math.min(box.top, box.bottom);
         this.left = Math.min(box.left, box.right);
         this.right = Math.max(box.left, box.right);
         this.bottom = Math.max(box.top, box.bottom);
+        this.setTransformation(transformation);
     }
 
     Cell.prototype = {
+        x: function() {
+            return this.t.scale*(this.left + this.t.x);
+        },
+        y: function() {
+            return this.t.scale*(this.top + this.t.y);
+        },
+        setRight: function(x) {
+            var t = this.t;
+            var s = t.scale;
+            this.right = x/s - t.x;
+        },
+        setBottom: function(y) {
+            var t = this.t;
+            var s = t.scale;
+            this.bottom = y/s - t.y;
+        },
         width: function() {
-            return this.right - this.left;
+            return this.t.scale * (this.right - this.left);
         },
         height: function() {
-            return this.bottom - this.top;
+            return this.t.scale * (this.bottom - this.top);
         },
         draw: function(context, style) {
             context.fillStyle = style || "rgba(0, 120, 0, 0.5)";
-            context.fillRect(this.left, this.top,
+            context.fillRect(this.x(), this.y(),
                          this.width(), this.height());
             context.font = "30px"
             context.strokeStyle = "#111";
             context.strokeText(this.label,
-                        this.left,
-                        this.top);
+                        this.x(),
+                        this.y());
         },
         clone: function() {
             return new Cell(this);
@@ -79,38 +96,47 @@
             this.right = Math.max(left, right);
             this.bottom = Math.max(top, bottom);
         },
+        setTransformation : function(transformation) {
+            var t = this.t = transformation || new Transformation();
+            var s = t.scale;
+            this.top = this.top/s-t.y;
+            this.left = this.left/s-t.x;
+            this.right = this.right/s-t.x;
+            this.bottom = this.bottom/s-t.y;
+        },
     }
 
-    function Image(image, x, y) {
+    function Image(image, args) {
         this.data = image;
-        this.x = x || 0;
-        this.y = y || 0;
-        this.scale = 1;
+        this._x = args.x || 0;
+        this._y = args.y || 0;
+        this.t = args.transformation || new Transformation();
     }
 
     Image.prototype = {
+        x: function() {
+            return this.t.scale*(this._x + this.t.x);
+        },
+        y: function() {
+            return this.t.scale*(this._y + this.t.y);
+        },
         width : function() {
-            var w = this.data.width * this.scale;
+            var w = this.data.width * this.t.scale;
             return w <= 0 ? 0 : w;
         },
         height : function() {
-            var h = this.data.height * this.scale;
+            var h = this.data.height * this.t.scale;
             return h <= 0 ? 0 : h;
         },
         draw : function(context) {
             var image = this.data;
             context.drawImage(image, 0, 0,
                               image.width, image.height,
-                              this.x, this.y,
+                              this.x(), this.y(),
                               this.width(), this.height());
         },
-        zoom : function(d) {
-            this.scale += d
-            if (this.scale < 0)
-                this.scale = 0;
-        },
-        move : function(dx, dy) { this.x += dx; this.y += dy },
-        moveAt : function(x, y) { this.x = x  ; this.y = y },
+        move : function(dx, dy) { this._x += dx; this._y += dy },
+        moveAt : function(x, y) { this._x = x  ; this._y = y },
     }
 
     function InputState(node) {
@@ -165,7 +191,11 @@
     }
 
     Transformation.prototype = {
-        moveAt : function(x, y) { this.x = x  ; this.y = y },
+        moveAt : function(x, y) {
+            var s = this.scale;
+            this.x = x/s;
+            this.y = y/s;
+        },
         zoom : function(d) {
             this.scale += d
             if (this.scale < 0)

@@ -6,13 +6,16 @@
     var fileInput;
     var canvas;
     var context;
-    var image;
     var inputState;
 
+    var transformation;
+    var image;
     var protocell;
     var cells = [];
 
     function load() {
+        transformation = new types.Transformation();
+
         initCanvas();
         initHandlers();
         initToolbar();
@@ -105,7 +108,7 @@
         var img = new Image();
         img.src = url;
         img.onload = function() {
-            var image = new types.Image(img);
+            var image = new types.Image(img, {transformation: transformation});
             if (fn)
                 fn(image);
         }
@@ -151,28 +154,28 @@
             mousedown : function(e) {
                 var pos = eToCanvas(e);
                 this.isMouseDown = true;
+                var t = transformation;
                 protocell = new types.Cell("creating", {
                     top : pos.y,
                     left : pos.x,
                     right : pos.x,
                     bottom : pos.y,
-                });
+                }, transformation);
             },
             mouseup : function(e) {
                 var pos = eToCanvas(e);
                 this.isMouseDown = false;
-                protocell.sortPoints();
                 protocell.label = "cell-"+cells.length;
+                protocell.sortPoints();
                 cells.push(protocell);
                 protocell = null;
             },
             mousemove : function(e) {
                 if (!this.isMouseDown)
                     return;
-                console.log("you sock");
                 var pos = eToCanvas(e);
-                protocell.right = pos.x;
-                protocell.bottom = pos.y;
+                protocell.setRight(pos.x);
+                protocell.setBottom(pos.y);
             },
         });
     }
@@ -184,12 +187,11 @@
                 if (!this.isMouseDown)
                     return;
                 var pos = eToCanvas(e);
-                image.moveAt(pos.x, pos.y);
-                image.draw(context);
+                transformation.moveAt(pos.x, pos.y);
             },
             mousedown : function(e) {
                 var pos = eToCanvas(e);
-                image.moveAt(pos.x, pos.y);
+                transformation.moveAt(pos.x, pos.y);
                 this.isMouseDown = true;
             },
             mouseup : function(e) {

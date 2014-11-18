@@ -21,6 +21,7 @@
 
         initCanvas();
         initHandlers();
+        initButtons();
         initToolbar();
         initImageLoader();
 
@@ -69,6 +70,17 @@
         inputState = new types.InputState(canvas);
         inputState.add("image", imageInputHandler())
         inputState.add("create-cell", cellCreateInputHandler())
+    }
+
+    function initButtons() {
+        var clearBtn = document.querySelector("#clear-btn");
+        clearBtn.onclick = function() {
+            if (cells.length > 0) {
+                var yes = confirm("Clear all cells?");
+                if (yes)
+                    cells = [];
+            }
+        }
     }
 
     function initToolbar() {

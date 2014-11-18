@@ -178,6 +178,7 @@
                 protocell.setRight(pos.x);
                 protocell.setBottom(pos.y);
             },
+            keydown: handleKeys,
         });
     }
 
@@ -198,14 +199,16 @@
             mouseup : function(e) {
                 this.isMouseDown = false;
             },
-            keydown: function(e) {
-                console.log(e);
-                if (e.keyCode == 61)
-                    image.zoom(0.5);
-                else if (e.keyCode == 173)
-                    image.zoom(-0.5);
-            },
+            keydown: handleKeys,
         });
+    }
+
+    function handleKeys(e) {
+        console.log(e);
+        if (e.keyCode == 61)
+            transformation.zoom(0.2);
+        else if (e.keyCode == 173)
+            transformation.zoom(-0.2);
     }
 
     // utils --------------------------------

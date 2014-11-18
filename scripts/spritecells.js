@@ -127,8 +127,9 @@
             var state = JSON.parse(s);
             console.log("loaded page state", state);
             inputState.set(state.inputStateName);
-            image.moveAt(state.image.x, state.image.y);
-            image.scale = state.image.scale;
+            if (state.transformation) {
+                matchValues(transformation, state.transformation);
+            }
         } catch (e) {
             console.log(e);
             localStorage[LSKEY] = "";
@@ -142,7 +143,7 @@
         }
         var state = {
             inputStateName: inputState.activeName,
-            image: select(image, ["x", "y", "scale"]),
+            transformation: transformation,
         }
         console.log("saving page state", state);
         localStorage[LSKEY] = JSON.stringify(state);
@@ -226,6 +227,15 @@
             copy[k] = obj[k];
         });
         return copy;
+    }
+
+    function matchValues(dest, src) {
+        for (var k in src) {
+            if (!src.hasOwnProperty(k))
+                continue;
+            dest[k] = src[k];
+        }
+        return dest;
     }
 
     function windowToCanvas(x, y) {

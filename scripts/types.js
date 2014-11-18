@@ -33,7 +33,7 @@
             return this.t.scale * (this.bottom - this.top);
         },
         draw: function(context, style) {
-            context.fillStyle = style || "rgba(0, 120, 0, 0.5)";
+            context.fillStyle = style || this.style || "rgba(0, 120, 0, 0.5)";
             context.fillRect(this.x(), this.y(),
                          this.width(), this.height());
             context.font = "30px"
@@ -66,10 +66,11 @@
             return clone;
         },
         move: function(dx, dy) {
-            this.top += dy;
-            this.left += dx;
-            this.right += dx;
-            this.bottom += dy;
+            var s = this.t.scale;
+            this.top += dy/s;
+            this.left += dx/s;
+            this.right += dx/s;
+            this.bottom += dy/s;
         },
         setPos: function(x, y) {
             var w = this.width(),
@@ -80,8 +81,10 @@
             this.bottom = y + h;
         },
         contains: function(x, y) {
-            return this.left <= x && x <= this.right &&
-                this.top <= y  && y <= this.bottom ;
+            var right = this.x() + this.width();
+            var bottom = this.y() + this.height();
+            return this.x() <= x && x <= right &&
+                this.y() <= y  && y <= bottom;
         },
         toString: function() {
             return this.left+","+this.top+","+this.right+","+this.bottom;

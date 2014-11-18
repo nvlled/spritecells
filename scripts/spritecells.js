@@ -11,6 +11,7 @@
     var transformation;
     var image;
     var protocell;
+    var selectedCell;
     var cells = [];
 
     var LSKEY = "spritecells";
@@ -70,6 +71,7 @@
         inputState = new types.InputState(canvas);
         inputState.add("image", imageInputHandler())
         inputState.add("create-cell", cellCreateInputHandler())
+        inputState.add("modify-cell", cellModifyInputHandler())
     }
 
     function initButtons() {
@@ -209,6 +211,45 @@
                 var pos = eToCanvas(e);
                 protocell.setRight(pos.x);
                 protocell.setBottom(pos.y);
+            },
+            keydown: handleKeys,
+        });
+    }
+
+    function cellModifyInputHandler() {
+        return bind({
+            isMouseDown : false,
+            lastPos : null,
+            mousedown : function(e) {
+                if (selectedCell) {
+                    selectedCell.style = null;
+                }
+                var pos = eToCanvas(e);
+                this.isMouseDown = true;
+                for (var i = 0; i < cells.length; i++) {
+                    var cell = cells[i];
+                    console.log(">", pos, cell.x(), cell.y());
+                    if (cell.contains(pos.x, pos.y)) {
+                        console.log("tadah", cell);
+                        selectedCell = cell;
+                        cell.style =  "rgba(0, 0, 120, 0.5)";
+                        break;
+                    }
+                }
+                this.lastPos = pos;
+            },
+            mouseup : function(e) {
+                this.isMouseDown = false;
+            },
+            mousemove : function(e) {
+                if (!this.isMouseDown || !selectedCell)
+                    return;
+                var s = transformation.scale;
+                var pos = eToCanvas(e);
+                var dx = pos.x - this.lastPos.x;
+                var dy = pos.y - this.lastPos.y;
+                this.lastPos = pos;
+                selectedCell.move(dx, dy);
             },
             keydown: handleKeys,
         });

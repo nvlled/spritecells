@@ -255,7 +255,18 @@
                 this.lastPos = pos;
                 selectedCell.move(dx, dy);
             },
-            keydown: handleKeys,
+            keydown: combine(handleKeys, function(e) {
+                if (e.keyCode == 46) {
+                    if (!selectedCell)
+                        return;
+                    var i = cells.indexOf(selectedCell);
+                    if (i > 0) {
+                        cells.splice(i, 1);
+                    }
+                    selectedCell.style = null;
+                    selectedCell = null;
+                }
+            }),
         });
     }
 
@@ -296,6 +307,13 @@
     }
 
     // utils --------------------------------
+
+    function combine(f, g) {
+        return function(x) {
+            f(x);
+            return g(x);
+        }
+    }
 
     function bind(obj) {
         for (var k in obj) {

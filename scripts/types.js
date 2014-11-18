@@ -199,6 +199,11 @@
             this.x = x/s;
             this.y = y/s;
         },
+        move: function(dx, dy) {
+            var s = this.scale;
+            this.x += dx/s;
+            this.y += dy/s;
+        },
         zoom : function(d) {
             this.scale += d
             if (this.scale < 0)

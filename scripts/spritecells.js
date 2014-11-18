@@ -226,6 +226,7 @@
                 if (selectedCell) {
                     selectedCell.style = null;
                 }
+                selectedCell = null;
                 var pos = eToCanvas(e);
                 this.isMouseDown = true;
                 for (var i = 0; i < cells.length; i++) {
@@ -242,6 +243,7 @@
             },
             mouseup : function(e) {
                 this.isMouseDown = false;
+                this.lastPos = null;
             },
             mousemove : function(e) {
                 if (!this.isMouseDown || !selectedCell)
@@ -260,19 +262,26 @@
     function imageInputHandler() {
         return bind({
             isMouseDown : false,
+            lastPos : null,
             mousemove : function(e) {
                 if (!this.isMouseDown)
                     return;
                 var pos = eToCanvas(e);
-                transformation.moveAt(pos.x, pos.y);
+                var s = transformation.scale;
+                var pos = eToCanvas(e);
+                var dx = pos.x - this.lastPos.x;
+                var dy = pos.y - this.lastPos.y;
+                transformation.move(dx, dy);
+                this.lastPos = pos;
             },
             mousedown : function(e) {
                 var pos = eToCanvas(e);
-                transformation.moveAt(pos.x, pos.y);
                 this.isMouseDown = true;
+                this.lastPos = pos;
             },
             mouseup : function(e) {
                 this.isMouseDown = false;
+                this.lastPos = null;
             },
             keydown: handleKeys,
         });

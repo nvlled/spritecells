@@ -76,12 +76,17 @@
 
     function initButtons() {
         var clearBtn = document.querySelector("#clear-btn");
-        clearBtn.onclick = function() {
+        clearBtn.addEventListener("click", function() {
             if (cells.length > 0) {
                 var yes = confirm("Clear all cells?");
                 if (yes)
                     cells = [];
             }
+        });
+        var buttons = document.querySelectorAll("button");
+        for (var i = 0; i < buttons.length; i++) {
+            console.log(i, buttons[i]);
+            buttons[i].addEventListener("click", savePageState);
         }
     }
 
@@ -91,18 +96,15 @@
         var btnCreateCell = toolbar.querySelector("button.create-cell");
         var btnModifyCell = toolbar.querySelector("button.modify-cell");
 
-        btnImage.onclick = function(e) {
+        btnImage.addEventListener("click", function(e) {
             inputState.set("image");
-            savePageState();
-        }
-        btnCreateCell.onclick = function(e) {
+        });
+        btnCreateCell.addEventListener("click", function(e) {
             inputState.set("create-cell");
-            savePageState();
-        }
-        btnModifyCell.onclick = function(e) {
+        });
+        btnModifyCell.addEventListener("click", function(e) {
             inputState.set("modify-cell");
-            savePageState();
-        }
+        });
 
         var activeButton;
         inputState.setHook(function(name) {

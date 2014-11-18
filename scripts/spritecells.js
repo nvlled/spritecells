@@ -13,6 +13,9 @@
     var protocell;
     var cells = [];
 
+    var LSKEY = "spritecells";
+    var MINCELL_SIZE = 15;
+
     function load() {
         transformation = new types.Transformation();
 
@@ -114,7 +117,6 @@
         }
     }
 
-    var LSKEY = "spritecells";
     function loadPageState() {
         if (!localStorage) {
             console.log("cannot load page state, localStorage is not supported");
@@ -181,9 +183,12 @@
             mouseup : function(e) {
                 var pos = eToCanvas(e);
                 this.isMouseDown = false;
-                protocell.label = "cell-"+cells.length;
-                protocell.sortPoints();
-                cells.push(protocell);
+                if (protocell.width() > MINCELL_SIZE &&
+                    protocell.height() > MINCELL_SIZE) {
+                    protocell.label = "cell-"+cells.length;
+                    protocell.sortPoints();
+                    cells.push(protocell);
+                }
                 protocell = null;
             },
             mousemove : function(e) {

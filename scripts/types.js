@@ -158,10 +158,25 @@
         },
     }
 
+    function Transformation() {
+        this.x = 0;
+        this.y = 0;
+        this.scale = 1;
+    }
+
+    Transformation.prototype = {
+        moveAt : function(x, y) { this.x = x  ; this.y = y },
+        zoom : function(d) {
+            this.scale += d
+            if (this.scale < 0)
+                this.scale = 0;
+        },
+    }
+
     root.types = {
         Cell : Cell,
         Image : Image,
         InputState : InputState,
+        Transformation : Transformation,
     }
-
 })(this);

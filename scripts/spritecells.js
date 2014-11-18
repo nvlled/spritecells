@@ -130,6 +130,18 @@
             if (state.transformation) {
                 matchValues(transformation, state.transformation);
             }
+            if (state.cells) {
+                state.cells.forEach(function(c) {
+                    var cell = new types.Cell(c.label, {
+                        top : c.top,
+                        left : c.left,
+                        right : c.right,
+                        bottom : c.bottom,
+                    })
+                    cell.t = transformation;
+                    cells.push(cell);
+                });
+            }
         } catch (e) {
             console.log(e);
             localStorage[LSKEY] = "";
@@ -144,6 +156,9 @@
         var state = {
             inputStateName: inputState.activeName,
             transformation: transformation,
+            cells: cells.map(function(cell) {
+                return select(cell, ["label", "top", "left", "right", "bottom"]);
+            }),
         }
         console.log("saving page state", state);
         localStorage[LSKEY] = JSON.stringify(state);

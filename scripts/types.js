@@ -213,10 +213,38 @@
         },
     }
 
+    function Modect() {
+        this._modified = true;
+    }
+
+    Modect.prototype = {
+        modified : function() {
+            return this._modified;
+        },
+        set : function() {
+            this._modified = true;
+        },
+        clear : function() {
+            this._modified = false;
+        },
+        wrap : function(obj) {
+            var that = this;
+            util.eachFunc(obj, function(fn, k) {
+                obj[k] = function() {
+                    that.set();
+                    var args = util.toArray(arguments);
+                    fn.apply(null, args);
+                }
+            });
+            return obj;
+        },
+    }
+
     root.types = {
         Cell : Cell,
         Image : Image,
         InputState : InputState,
         Transformation : Transformation,
+        Modect : Modect,
     }
 })(this);

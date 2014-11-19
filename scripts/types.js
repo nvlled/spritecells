@@ -164,6 +164,7 @@
                 node.addEventListener("mouseup", handler.mouseup);
                 node.addEventListener("mousemove", handler.mousemove);
                 root.addEventListener("keydown", handler.keydown);
+                root.addEventListener("keyup", handler.keyup);
             } else {
                 console.log("handler not registered:", name);
             }
@@ -181,6 +182,7 @@
             node.removeEventListener("mouseup", handler.mouseup);
             node.removeEventListener("mousemove", handler.mousemove);
             root.removeEventListener("keydown", handler.keydown);
+            root.removeEventListener("keyup", handler.keyup);
         },
         setHook : function(fn) {
             this.hook = fn;

@@ -60,8 +60,8 @@
         fileInput.onchange = function() {
             loadImage(fileInput.files[0], function(img) {
                 image = img;
-                startLoop();
                 loadPageState();
+                startLoop();
             });
         }
         fileInput.onchange();
@@ -85,7 +85,6 @@
         });
         var buttons = document.querySelectorAll("button");
         for (var i = 0; i < buttons.length; i++) {
-            console.log(i, buttons[i]);
             buttons[i].addEventListener("click", savePageState);
         }
     }
@@ -222,6 +221,7 @@
         return bind({
             isMouseDown : false,
             lastPos : null,
+            resize : false,
             mousedown : function(e) {
                 if (selectedCell) {
                     selectedCell.style = null;
@@ -231,31 +231,48 @@
                 this.isMouseDown = true;
                 for (var i = 0; i < cells.length; i++) {
                     var cell = cells[i];
-                    console.log(">", pos, cell.x(), cell.y());
                     if (cell.contains(pos.x, pos.y)) {
-                        console.log("tadah", cell);
                         selectedCell = cell;
                         cell.style =  "rgba(0, 0, 120, 0.5)";
                         break;
                     }
+                }
+                if (selectedCell && this.resize) {
+                    selectedCell.setRight(pos.x);
+                    selectedCell.setBottom(pos.y);
                 }
                 this.lastPos = pos;
             },
             mouseup : function(e) {
                 this.isMouseDown = false;
                 this.lastPos = null;
+                if (selectedCell)
+                    selectedCell.sortPoints();
             },
             mousemove : function(e) {
                 if (!this.isMouseDown || !selectedCell)
                     return;
-                var s = transformation.scale;
                 var pos = eToCanvas(e);
-                var dx = pos.x - this.lastPos.x;
-                var dy = pos.y - this.lastPos.y;
+                if (this.resize) {
+                    selectedCell.setRight(pos.x);
+                    selectedCell.setBottom(pos.y);
+                } else {
+                    var s = transformation.scale;
+                    var dx = pos.x - this.lastPos.x;
+                    var dy = pos.y - this.lastPos.y;
+                    selectedCell.move(dx, dy);
+                }
                 this.lastPos = pos;
-                selectedCell.move(dx, dy);
             },
-            keydown: combine(handleKeys, function(e) {
+            keyup: function(e) {
+                if (e.keyCode == 16)
+                    this.resize = false;
+            },
+            keydown: function(e) {
+                if (e.keyCode == 61)
+                    transformation.zoom(0.2);
+                else if (e.keyCode == 173)
+                    transformation.zoom(-0.2);
                 if (e.keyCode == 46) {
                     if (!selectedCell)
                         return;
@@ -266,7 +283,9 @@
                     selectedCell.style = null;
                     selectedCell = null;
                 }
-            }),
+                if (e.keyCode == 16)
+                    this.resize = true;
+            },
         });
     }
 
@@ -307,13 +326,6 @@
     }
 
     // utils --------------------------------
-
-    function combine(f, g) {
-        return function(x) {
-            f(x);
-            return g(x);
-        }
-    }
 
     function bind(obj) {
         for (var k in obj) {

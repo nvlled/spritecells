@@ -17,14 +17,23 @@
     var LSKEY = "spritecells";
     var MINCELL_SIZE = 15;
 
+    var modect;
     function load() {
         transformation = new types.Transformation();
+        modect = new types.Modect();
 
         initCanvas();
         initHandlers();
         initButtons();
         initToolbar();
         initImageLoader();
+
+        var handler = modect.set.bind(modect);
+        root.addEventListener("mousedown", handler);
+        root.addEventListener("mouseup", handler);
+        root.addEventListener("mousemove", handler);
+        root.addEventListener("keydown", handler);
+        root.addEventListener("keyup", handler);
 
         // Save page state every N seconds
         //setInterval(savePageState, 10000);
@@ -33,15 +42,18 @@
     function startLoop() {
         drawLoop();
         function drawLoop(dt) {
-            context.clearRect(0, 0, canvas.width, canvas.height);
-            image.draw(context);
-            cells.forEach(function(cell) {
-                cell.draw(context);
-            });
-            if (protocell)
-                protocell.draw(context, "rgba(120, 0, 0, 0.5)");
-            // TODO: draw borders around the image
-
+            // Throttle loop as well
+            if (modect.modified()) {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                image.draw(context);
+                cells.forEach(function(cell) {
+                    cell.draw(context);
+                });
+                if (protocell)
+                    protocell.draw(context, "rgba(120, 0, 0, 0.5)");
+                // TODO: draw borders around the image
+            }
+            modect.clear();
             mozRequestAnimationFrame(drawLoop);
         }
     }

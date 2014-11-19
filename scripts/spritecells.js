@@ -145,7 +145,7 @@
             console.log("loaded page state", state);
             inputState.set(state.inputStateName);
             if (state.transformation) {
-                matchValues(transformation, state.transformation);
+                util.matchValues(transformation, state.transformation);
             }
             if (state.cells) {
                 state.cells.forEach(function(c) {
@@ -174,7 +174,7 @@
             inputStateName: inputState.activeName,
             transformation: transformation,
             cells: cells.map(function(cell) {
-                return select(cell, ["label", "top", "left", "right", "bottom"]);
+                return util.select(cell, ["label", "top", "left", "right", "bottom"]);
             }),
         }
         console.log("saving page state", state);
@@ -182,7 +182,7 @@
     }
 
     function cellCreateInputHandler() {
-        return bind({
+        return util.bind({
             isMouseDown : false,
             mousedown : function(e) {
                 var pos = eToCanvas(e);
@@ -218,7 +218,7 @@
     }
 
     function cellModifyInputHandler() {
-        return bind({
+        return util.bind({
             isMouseDown : false,
             lastPos : null,
             resize : false,
@@ -290,7 +290,7 @@
     }
 
     function imageInputHandler() {
-        return bind({
+        return util.bind({
             isMouseDown : false,
             lastPos : null,
             mousemove : function(e) {
@@ -323,36 +323,6 @@
             transformation.zoom(0.2);
         else if (e.keyCode == 173)
             transformation.zoom(-0.2);
-    }
-
-    // utils --------------------------------
-
-    function bind(obj) {
-        for (var k in obj) {
-            if (!obj.hasOwnProperty(k))
-                continue;
-            if (typeof obj[k] !== "function")
-                continue;
-            obj[k] = obj[k].bind(obj)
-        }
-        return obj;
-    }
-
-    function select(obj, keys) {
-        var copy = {};
-        keys.forEach(function(k) {
-            copy[k] = obj[k];
-        });
-        return copy;
-    }
-
-    function matchValues(dest, src) {
-        for (var k in src) {
-            if (!src.hasOwnProperty(k))
-                continue;
-            dest[k] = src[k];
-        }
-        return dest;
     }
 
     function windowToCanvas(x, y) {

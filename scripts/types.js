@@ -170,6 +170,8 @@
             }
             this.activeName = name;
             this.activeHandler = handler;
+            if (typeof handler.enter === "function")
+                handler.enter();
             if (typeof this.hook === "function")
                 this.hook(name);
         },
@@ -177,6 +179,8 @@
             var handler = this.activeHandler;
             if (!handler)
                 return;
+            if (typeof handler.leave === "function")
+                handler.leave();
             var node = this.node;
             node.removeEventListener("mousedown", handler.mousedown);
             node.removeEventListener("mouseup", handler.mouseup);

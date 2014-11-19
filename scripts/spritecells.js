@@ -196,6 +196,12 @@
     function cellCreateInputHandler() {
         return util.bind({
             isMouseDown : false,
+            enter : function() {
+                canvas.style.cursor = "crosshair";
+            },
+            leave : function() {
+                canvas.style.cursor = "";
+            },
             mousedown : function(e) {
                 var pos = eToCanvas(e);
                 this.isMouseDown = true;
@@ -217,6 +223,8 @@
                     cells.push(protocell);
                 }
                 protocell = null;
+                // TODO: switch mode only if shift is not down
+                inputState.set("modify-cell");
             },
             mousemove : function(e) {
                 if (!this.isMouseDown)
@@ -289,7 +297,7 @@
                     if (!selectedCell)
                         return;
                     var i = cells.indexOf(selectedCell);
-                    if (i > 0) {
+                    if (i >= 0) {
                         cells.splice(i, 1);
                     }
                     selectedCell.style = null;
@@ -305,6 +313,12 @@
         return util.bind({
             isMouseDown : false,
             lastPos : null,
+            enter : function() {
+                canvas.style.cursor = "grab";
+            },
+            leave : function() {
+                canvas.style.cursor = "";
+            },
             mousemove : function(e) {
                 if (!this.isMouseDown)
                     return;
@@ -320,10 +334,12 @@
                 var pos = eToCanvas(e);
                 this.isMouseDown = true;
                 this.lastPos = pos;
+                canvas.style.cursor = "grabbing";
             },
             mouseup : function(e) {
                 this.isMouseDown = false;
                 this.lastPos = null;
+                canvas.style.cursor = "grab";
             },
             keydown: handleKeys,
         });

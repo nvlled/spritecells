@@ -255,11 +255,13 @@
         });
     }
 
+    // TODO: Separate resize and move handler
     function cellModifyInputHandler() {
         return util.bind({
             isMouseDown : false,
             lastPos : null,
             resize : false,
+            cellData : null,
             mousedown : function(e) {
                 if (selectedCell) {
                     selectedCell.style = null;
@@ -280,12 +282,27 @@
                     selectedCell.setBottom(pos.y);
                 }
                 this.lastPos = pos;
+                this.cellData = util.select(
+                    selectedCell, ["top", "left", "right", "bottom"]);
             },
             mouseup : function(e) {
                 this.isMouseDown = false;
                 this.lastPos = null;
-                if (selectedCell)
-                    selectedCell.sortPoints();
+                if (!selectedCell)
+                    return;
+
+                selectedCell.sortPoints();
+
+                var c1 = this.cellData;
+                var c2 = selectedCell;
+                var dt = c2.top    - c1.top;
+                var dl = c2.left   - c1.left;
+                var dr = c2.right  - c1.right;
+                var db = c2.bottom - c1.bottom;
+                actionHistory.done(action.ModifyCell(selectedCell, dt, dl, dr, db));
+
+                this.lastSize = null;
+                this.lastPos = null;
             },
             mousemove : function(e) {
                 if (!this.isMouseDown || !selectedCell)
@@ -295,7 +312,7 @@
                     selectedCell.setRight(pos.x);
                     selectedCell.setBottom(pos.y);
                 } else {
-                    var s = transformation.scale;
+                    // **** var s = transformation.scale;
                     var dx = pos.x - this.lastPos.x;
                     var dy = pos.y - this.lastPos.y;
                     selectedCell.move(dx, dy);
@@ -386,6 +403,19 @@
                 },
                 redo : function() {
                     arrays.remove(cells, cell);
+                },
+            }
+        },
+        ModifyCell : function(cell, dt, dl, dr, db) {
+            return {
+                name : "modify-cell",
+                undo : function() {
+                    var s = transformation.scale;
+                    cell.transform(-dt*s, -dl*s, -dr*s, -db*s);
+                },
+                redo : function() {
+                    var s = transformation.scale;
+                    cell.transform(dt*s, dl*s, dr*s, db*s);
                 },
             }
         },

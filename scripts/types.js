@@ -72,6 +72,13 @@
             this.right += dx/s;
             this.bottom += dy/s;
         },
+        transform : function(dt, dl, dr, db) {
+            var s = this.t.scale;
+            this.top += dt/s;
+            this.left += dl/s;
+            this.right += dr/s;
+            this.bottom += db/s;
+        },
         setPos: function(x, y) {
             var w = this.width(),
             h = this.height();

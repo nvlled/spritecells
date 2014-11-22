@@ -47,9 +47,25 @@
         return obj;
     }
 
-    M.toArray = function(arrayish) {
+    var arrays = {};
+
+    arrays.remove = function(arr, x) {
+        var i = arr.indexOf(x);
+        if (i >= 0) {
+            arr.splice(i, 1);
+        }
+        return arr;
+    }
+
+    arrays.insertAt = function(arr, index, x) {
+        arr.splice(index, -1, x);
+    }
+
+    arrays.convert = function(arrayish) {
         return Array.prototype.slice.call(arrayish);
     }
+
+    M.arrays = arrays;
 
     root.util = M;
 

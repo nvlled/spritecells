@@ -3,10 +3,13 @@
 
     root.addEventListener("load", load);
 
+    var arrays = util.arrays;
+
     var fileInput;
     var canvas;
     var context;
     var inputState;
+    var actionHistory;
 
     var transformation;
     var image;
@@ -19,6 +22,8 @@
 
     var modect;
     function load() {
+        actionHistory = new types.ActionHistory();
+        root.hist = actionHistory;
         transformation = new types.Transformation();
         modect = new types.Modect();
 
@@ -106,6 +111,8 @@
         var btnImage = toolbar.querySelector("button.image");
         var btnCreateCell = toolbar.querySelector("button.create-cell");
         var btnModifyCell = toolbar.querySelector("button.modify-cell");
+        var btnUndo = toolbar.querySelector("button.undo");
+        var btnRedo = toolbar.querySelector("button.redo");
 
         btnImage.addEventListener("click", function(e) {
             inputState.set("image");
@@ -116,6 +123,13 @@
         btnModifyCell.addEventListener("click", function(e) {
             inputState.set("modify-cell");
         });
+
+        btnUndo.onclick = function(e) {
+            actionHistory.undo();
+        };
+        btnRedo.onclick = function(e) {
+            actionHistory.redo();
+        };
 
         var activeButton;
         inputState.setHook(function(name) {
@@ -216,12 +230,16 @@
             mouseup : function(e) {
                 var pos = eToCanvas(e);
                 this.isMouseDown = false;
-                if (protocell.width() > MINCELL_SIZE &&
-                    protocell.height() > MINCELL_SIZE) {
-                    protocell.label = "cell-"+cells.length;
-                    protocell.sortPoints();
-                    cells.push(protocell);
+                if (protocell.width() <= MINCELL_SIZE ||
+                    protocell.height() <= MINCELL_SIZE) {
+                    protocell = null;
+                    return;
                 }
+                protocell.label = "cell-"+cells.length;
+                protocell.sortPoints();
+                cells.push(protocell);
+                actionHistory.done(action.CreateCell(protocell));
+
                 protocell = null;
                 // TODO: switch mode only if shift is not down
                 inputState.set("modify-cell");
@@ -296,10 +314,13 @@
                 if (e.keyCode == 46) {
                     if (!selectedCell)
                         return;
+
                     var i = cells.indexOf(selectedCell);
                     if (i >= 0) {
                         cells.splice(i, 1);
                     }
+                    actionHistory.done(action.DeleteCell(i, selectedCell));
+
                     selectedCell.style = null;
                     selectedCell = null;
                 }
@@ -343,6 +364,31 @@
             },
             keydown: handleKeys,
         });
+    }
+
+    var action = {
+        CreateCell : function(cell) {
+            return {
+                name : "create-cell",
+                undo : function() {
+                    cells.pop();
+                },
+                redo : function() {
+                    cells.push(cell);
+                },
+            }
+        },
+        DeleteCell : function(index, cell) {
+            return {
+                name : "delete-cell",
+                undo : function() {
+                    arrays.insertAt(cells, index, cell);
+                },
+                redo : function() {
+                    arrays.remove(cells, cell);
+                },
+            }
+        },
     }
 
     function handleKeys(e) {

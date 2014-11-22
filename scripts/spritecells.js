@@ -277,13 +277,15 @@
                         break;
                     }
                 }
+                if (selectedCell) {
+                    this.cellData = util.select(
+                        selectedCell, ["top", "left", "right", "bottom"]);
+                }
                 if (selectedCell && this.resize) {
                     selectedCell.setRight(pos.x);
                     selectedCell.setBottom(pos.y);
                 }
                 this.lastPos = pos;
-                this.cellData = util.select(
-                    selectedCell, ["top", "left", "right", "bottom"]);
             },
             mouseup : function(e) {
                 this.isMouseDown = false;
@@ -299,9 +301,11 @@
                 var dl = c2.left   - c1.left;
                 var dr = c2.right  - c1.right;
                 var db = c2.bottom - c1.bottom;
-                actionHistory.done(action.ModifyCell(selectedCell, dt, dl, dr, db));
 
-                this.lastSize = null;
+                if (dt + dl + dr + db !== 0)
+                    actionHistory.done(action.ModifyCell(selectedCell, dt, dl, dr, db));
+
+                this.cellData = null;
                 this.lastPos = null;
             },
             mousemove : function(e) {

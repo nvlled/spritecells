@@ -244,11 +244,74 @@
         },
     }
 
+    function ActionHistory(size) {
+        this.index = -1;
+        this.actions = [];
+        this.histSize = size || 10;// TODO: limit action size
+    }
+    ActionHistory.prototype = {
+        perform : function(action) {
+            action.redo();
+            this.done(action);
+        },
+        done : function(action) {
+            function isFunc(x) { return typeof x==="function" }
+            console.assert(isFunc(action.undo), "action interface");
+            console.assert(isFunc(action.redo), "action interface");
+
+            var i = Math.max(this.index, -1);
+            if (i < this.end()) {
+                // overwrite upstream actions
+                this.actions.splice(i+1, this.end()+1);
+            }
+            this.actions.push(action);
+            this.index = this.end();
+        },
+        // head can be undone
+        undo : function() {
+            var action = this.head();
+            if (action) {
+                action.undo();
+                this.back();
+            }
+        },
+        // head can not be redone
+        redo : function() {
+            if (this.index < this.end()) {
+                var action = this.nextHead();
+                if (action)
+                    action.redo();
+            }
+        },
+        end : function() {
+            return this.actions.length-1;
+        },
+
+        // allowed index range: (-1) to (actions.length-1)
+        forward : function() {
+            if (this.index < this.end())
+                this.index++;
+        },
+        back : function() {
+            if (this.index >= 0)
+                this.index--;
+        },
+
+        head : function() {
+            return this.actions[this.index];
+        },
+        nextHead : function() {
+            this.forward();
+            return this.head();
+        },
+    }
+
     root.types = {
         Cell : Cell,
         Image : Image,
         InputState : InputState,
         Transformation : Transformation,
         Modect : Modect,
+        ActionHistory : ActionHistory,
     }
 })(this);

@@ -254,7 +254,7 @@
     function ActionHistory(size) {
         this.index = -1;
         this.actions = [];
-        this.histSize = size || 10;// TODO: limit action size
+        this.histSize = size || 20;
     }
     ActionHistory.prototype = {
         perform : function(action) {
@@ -270,6 +270,9 @@
             if (i < this.end()) {
                 // overwrite upstream actions
                 this.actions.splice(i+1, this.end()+1);
+            }
+            if (this.actions.length >= this.histSize) {
+                this.actions.shift();
             }
             this.actions.push(action);
             this.index = this.end();

@@ -13,7 +13,6 @@
 
     var transformation;
     var image;
-    var selectedCell;
     var cells = [];
 
     var LSKEY = "spritecells";
@@ -258,99 +257,231 @@
         });
     }
 
-    // TODO: Separate resize and move handler
-    function cellModifyInputHandler() {
+    function cellMoveInputHandler() {
         return util.bind({
-            isMouseDown : false,
+            selectedCell : null,
             lastPos : null,
-            resize : false,
-            cellData : null,
             mousedown : function(e) {
-                if (selectedCell) {
-                    selectedCell.style = null;
-                }
-                selectedCell = null;
                 var pos = eToCanvas(e);
-                this.isMouseDown = true;
-                for (var i = 0; i < cells.length; i++) {
-                    var cell = cells[i];
-                    if (cell.contains(pos.x, pos.y)) {
-                        selectedCell = cell;
-                        cell.style =  "rgba(0, 0, 120, 0.5)";
-                        break;
-                    }
+                var cell = getCellOnPoint(pos);
+                if (cell) {
+                    this.selectedCell = cell;
+                    this.lastPos = pos;
                 }
-                if (selectedCell) {
-                    this.cellData = util.select(
-                        selectedCell, ["top", "left", "right", "bottom"]);
-                }
-                if (selectedCell && this.resize) {
-                    selectedCell.setRight(pos.x);
-                    selectedCell.setBottom(pos.y);
-                }
-                this.lastPos = pos;
             },
             mouseup : function(e) {
-                this.isMouseDown = false;
-                this.lastPos = null;
-                if (!selectedCell)
-                    return;
-
-                selectedCell.sortPoints();
-
-                var c1 = this.cellData;
-                var c2 = selectedCell;
-                var dt = c2.top    - c1.top;
-                var dl = c2.left   - c1.left;
-                var dr = c2.right  - c1.right;
-                var db = c2.bottom - c1.bottom;
-
-                if (dt + dl + dr + db !== 0)
-                    actionHistory.done(action.ModifyCell(selectedCell, dt, dl, dr, db));
-
-                this.cellData = null;
                 this.lastPos = null;
             },
             mousemove : function(e) {
-                if (!this.isMouseDown || !selectedCell)
-                    return;
                 var pos = eToCanvas(e);
-                if (this.resize) {
-                    selectedCell.setRight(pos.x);
-                    selectedCell.setBottom(pos.y);
-                } else {
-                    // **** var s = transformation.scale;
+                var scell = this.selectedCell;
+                if (!scell)
+                    return;
+                if (this.lastPos) {
                     var dx = pos.x - this.lastPos.x;
                     var dy = pos.y - this.lastPos.y;
-                    selectedCell.move(dx, dy);
+                    scell.move(dx, dy);
                 }
                 this.lastPos = pos;
             },
-            keyup: function(e) {
-                if (e.keyCode == 16)
+        });
+    }
+
+    function cellResizeInputHandler() {
+        return util.bind({
+            selectedCell : null,
+            lastPos : null,
+            mouseup : function(e) {
+                this.lastPos = null;
+                if (this.selectedCell) {
+                    this.selectedCell.sortPoints();
+                }
+            },
+            mousedown : function(e) {
+                var pos = eToCanvas(e);
+                var cell = getCellOnPoint(pos);
+                if (cell) {
+                    this.selectedCell = cell;
+                }
+            },
+            mousemove : function(e) {
+                var scell = this.selectedCell;
+                if (!scell )
+                    return;
+
+                var pos = eToCanvas(e);
+                if (this.lastPos) {
+                    var dx = pos.x - this.lastPos.x;
+                    var dy = pos.y - this.lastPos.y;
+                    var s = transformation.scale;
+                    this.selectedCell.transform(0, 0, dx, dy);
+                }
+                this.lastPos = pos;
+            },
+        });
+    }
+
+    function cellRegionInputHandler() {
+        return util.bind({
+            region : null,
+            selectedCell : null,
+            draw : function(context) {
+                if (this.region) {
+                    var r = this.region;
+                    context.strokeRect(r.x, r.y, r.w, r.h);
+                }
+            },
+            newRegion : function(e) {
+                var pos = eToCanvas(e);
+            },
+            mousedown : function(e) {
+                var pos = eToCanvas(e);
+                this.region = {
+                    x : pos.x,
+                    y : pos.y,
+                    w : 0,
+                    h : 0,
+                }
+                this.lastPos = pos;
+            },
+            getEnclosedCells : function() {
+                var enclosed = [];
+                cells.forEach(function(cell) {
+                    if (this.contains(cell)) {
+                        enclosed.push(cell);
+                    }
+                }.bind(this));
+                return enclosed;
+            },
+            contains : function(cell) {
+                var r = this.region;
+                var w = cell.width();
+                var h = cell.height();
+                return r.x <= cell.x() &&
+                    r.y <= cell.y() &&
+                    r.x+r.w >= cell.x()+w &&
+                    r.y+r.h >= cell.y()+h;
+            },
+            mouseup : function(e) {
+                var r = this.region;
+                if (r.w < 0) {
+                    r.x += r.w;
+                    r.w = Math.abs(r.w);
+                }
+                if (r.h < 0) {
+                    r.y += r.h;
+                    r.h = Math.abs(r.h);
+                }
+                var cells = this.getEnclosedCells();
+                if (cells.length > 0) {
+                    var multicell = types.MultiCell.create(cells);
+                    this.selectedCell = multicell;
+                }
+            },
+            mousemove : function(e) {
+                var pos = eToCanvas(e);
+                if (this.lastPos) {
+                    var dx = pos.x - this.lastPos.x;
+                    var dy = pos.y - this.lastPos.y;
+                    this.region.w += dx;
+                    this.region.h += dy;
+                    var r = this.region;
+                }
+                this.lastPos = pos;
+            },
+        });
+    }
+
+    function cellModifyInputHandler() {
+        var identity = function() {};
+        return util.bind({
+            selectedCell : null,
+            subHandler : null,
+            resize : false,
+
+            cellResize : cellResizeInputHandler(),
+            cellMove : cellMoveInputHandler(),
+            cellRegion : cellRegionInputHandler(),
+
+            draw : function(context) {
+                if (!this.subHandler)
+                    return;
+                var draw = this.subHandler.draw;
+                if (typeof draw=== "function")
+                    draw(context);
+            },
+            mousedown : function(e) {
+                var pos = eToCanvas(e);
+                var cell = getCellOnPoint(pos);
+                var handler;
+                if (!cell) {
+                    handler  = this.cellRegion;
+                    if (handler.selectedCell) {
+                        handler.selectedCell.restoreStyle();
+                        handler.selectedCell = null;
+                    }
+                    handler.mousedown(e);
+                } else {
+                    if (this.resize) // shift key down
+                        handler = this.cellResize;
+                    else
+                        handler = this.cellMove;
+
+                    var scell = this.selectedCell;
+                    if (scell && scell.contains(cell)) {
+                        scell.setReference(cell);
+                    } else {
+                        if (scell) scell.restoreStyle();
+                        scell = new types.MultiCell(cell);
+                    }
+                    this.setSelectedCell(scell);
+                }
+                this.subHandler = handler;
+            },
+            mousemove : function(e) {
+                if (this.subHandler)
+                    this.subHandler.mousemove(e);
+            },
+            mouseup : function(e) {
+                var h = this.subHandler;
+                if (h) {
+                    h.mouseup(e);
+                    this.selectedCell = h.selectedCell;
+                    this.subHandler = null;
+                }
+            },
+            keyup : function(e) {
+                if (e.keyCode === 16)
                     this.resize = false;
             },
-            keydown: function(e) {
-                if (e.keyCode == 61)
+            keydown : function(e) {
+                this.resize = e.keyCode === 16;
+                var scell = this.selectedCell;
+                if (e.key === "y" && scell) {
+                    scell.horizontalAlign();
+                } else if (e.key === "x" && scell) {
+                    scell.verticalAlign();
+                } else if (e.key === "w" && scell) {
+                    scell.syncWidth();
+                } else if (e.key === "h" && scell) {
+                    scell.syncHeight();
+                } else if (e.key === "Del" && scell) {
+                    scell.forEach(function(cell) {
+                        arrays.remove(cells, cell);
+                    });
+                    this.setSelectedCell(null);
+                } else if (e.keyCode == 61) {
                     transformation.zoom(0.2);
-                else if (e.keyCode == 173)
+                } else if (e.keyCode == 173) {
                     transformation.zoom(-0.2);
-                if (e.keyCode == 46) {
-                    if (!selectedCell)
-                        return;
-
-                    var i = cells.indexOf(selectedCell);
-                    if (i >= 0) {
-                        cells.splice(i, 1);
-                    }
-                    actionHistory.done(action.DeleteCell(i, selectedCell));
-
-                    selectedCell.style = null;
-                    selectedCell = null;
                 }
-                if (e.keyCode == 16)
-                    this.resize = true;
             },
+            setSelectedCell : function(cell) {
+                this.selectedCell = cell;
+                this.cellResize.selectedCell = cell;
+                this.cellMove.selectedCell = cell;
+                this.cellRegion.selectedCell = cell;
+            }
         });
     }
 
@@ -426,6 +557,16 @@
                 },
             }
         },
+    }
+
+    function getCellOnPoint(pos) {
+        for (var i = 0; i < cells.length; i++) {
+            var cell = cells[i];
+            if (cell.contains(pos.x, pos.y)) {
+                return cell;
+            }
+        }
+        return null;
     }
 
     function handleKeys(e) {

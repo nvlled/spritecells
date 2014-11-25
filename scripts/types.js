@@ -165,6 +165,10 @@
             this.refcell = cell;
             this.refcell.style = "rgba(130, 30, 30, 0.5)";
         },
+        add : function(cell) {
+            this.cells.push(cell);
+            cell.style = "rgba(130, 50, 50, 0.5)";
+        },
         contains : function(cell) {
             return this.refcell == cell ||
                 this.cells.indexOf(cell) >= 0;

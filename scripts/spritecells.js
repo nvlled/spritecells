@@ -398,6 +398,7 @@
             selectedCell : null,
             subHandler : null,
             resize : false,
+            addCell : false,
 
             cellResize : cellResizeInputHandler(),
             cellMove : cellMoveInputHandler(),
@@ -431,8 +432,12 @@
                     if (scell && scell.contains(cell)) {
                         scell.setReference(cell);
                     } else {
-                        if (scell) scell.restoreStyle();
-                        scell = new types.MultiCell(cell);
+                        if (scell && this.addCell) {
+                            scell.add(cell);
+                        } else {
+                            if (scell) scell.restoreStyle();
+                            scell = new types.MultiCell(cell);
+                        }
                     }
                     this.setSelectedCell(scell);
                 }
@@ -451,11 +456,15 @@
                 }
             },
             keyup : function(e) {
-                if (e.keyCode === 16)
+                if (e.key === "r")
                     this.resize = false;
+                else if (e.key === "Shift")
+                    this.addCell = false;
             },
             keydown : function(e) {
-                this.resize = e.keyCode === 16;
+                this.resize = e.key === "r";
+                this.addCell = e.key === "Shift";
+
                 var scell = this.selectedCell;
                 if (e.key === "y" && scell) {
                     scell.horizontalAlign();

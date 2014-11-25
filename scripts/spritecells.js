@@ -13,7 +13,6 @@
 
     var transformation;
     var image;
-    var protocell;
     var selectedCell;
     var cells = [];
 
@@ -208,6 +207,7 @@
 
     function cellCreateInputHandler() {
         return util.bind({
+            cell : null,
             isMouseDown : false,
             enter : function() {
                 canvas.style.cursor = "crosshair";
@@ -223,7 +223,7 @@
                 var pos = eToCanvas(e);
                 this.isMouseDown = true;
                 var t = transformation;
-                protocell = new types.Cell("creating", {
+                this.cell = new types.Cell("creating", {
                     top : pos.y,
                     left : pos.x,
                     right : pos.x,
@@ -233,17 +233,17 @@
             mouseup : function(e) {
                 var pos = eToCanvas(e);
                 this.isMouseDown = false;
-                if (protocell.width() <= MINCELL_SIZE ||
-                    protocell.height() <= MINCELL_SIZE) {
-                    protocell = null;
+                if (this.cell.width() <= MINCELL_SIZE ||
+                    this.cell.height() <= MINCELL_SIZE) {
+                    this.cell = null;
                     return;
                 }
-                protocell.label = "cell-"+cells.length;
-                protocell.sortPoints();
-                cells.push(protocell);
-                actionHistory.done(action.CreateCell(protocell));
+                this.cell.label = "cell-"+cells.length;
+                this.cell.sortPoints();
+                cells.push(this.cell);
+                actionHistory.done(action.CreateCell(this.cell));
 
-                protocell = null;
+                this.cell = null;
                 // TODO: switch mode only if shift is not down
                 inputState.set("modify-cell");
             },
@@ -251,8 +251,8 @@
                 if (!this.isMouseDown)
                     return;
                 var pos = eToCanvas(e);
-                protocell.setRight(pos.x);
-                protocell.setBottom(pos.y);
+                this.cell.setRight(pos.x);
+                this.cell.setBottom(pos.y);
             },
             keydown: handleKeys,
         });

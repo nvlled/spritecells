@@ -158,6 +158,11 @@
     }
 
     InputState.prototype = {
+        draw : function(context) {
+            var h = this.activeHandler;
+            if (h && typeof h.draw === "function")
+                h.draw(context);
+        },
         add : function(name, handler) {
             this.handlers[name] = handler;
         },

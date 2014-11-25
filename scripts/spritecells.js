@@ -51,11 +51,10 @@
             if (modect.modified()) {
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 image.draw(context);
+                inputState.draw(context);
                 cells.forEach(function(cell) {
                     cell.draw(context);
                 });
-                if (protocell)
-                    protocell.draw(context, "rgba(120, 0, 0, 0.5)");
                 // TODO: draw borders around the image
             }
             modect.clear();
@@ -215,6 +214,10 @@
             },
             leave : function() {
                 canvas.style.cursor = "";
+            },
+            draw : function(e) {
+                if (this.cell)
+                    this.cell.draw(context, "rgba(120, 0, 0, 0.5)");
             },
             mousedown : function(e) {
                 var pos = eToCanvas(e);

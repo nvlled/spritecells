@@ -116,6 +116,109 @@
         },
     }
 
+    function MultiCell(refcell, cells) {
+        this.refcell = refcell;
+        this.cells = cells || [];
+
+        this.refcell.style = "rgba(130, 30, 30, 0.5)";
+        this.cells.forEach(function(cell) {
+            cell.style = "rgba(130, 50, 50, 0.5)";
+        });
+    }
+
+    MultiCell.create = function(cells) {
+        cells.sort(function(c1, c2) {
+            return c1.x() > c2.x();
+        });
+        var refcell = cells.shift();
+        return new MultiCell(refcell, cells);
+    }
+
+    MultiCell.prototype = {
+        x : function() { },
+        y : function() { },
+        move : function(dx, dy) {
+            this.forEach(function(cell) {
+                cell.move(dx, dy);
+            });
+        },
+        transform : function(dt, dl, dr, db) {
+            this.forEach(function(cell) {
+                cell.transform(dt, dl, dr, db);
+            });
+        },
+        sortPoints : function() {
+            this.forEach(function(cell) {
+                cell.sortPoints();
+            });
+        },
+        setReference : function(cell) {
+            if (this.refcell == cell)
+                return;
+            var i = this.cells.indexOf(cell);
+            if (i >= 0) {
+                this.cells[i] = this.refcell;
+                this.cells[i].style = "rgba(130, 50, 50, 0.5)";
+            } else {
+                throw "shit";
+            }
+            this.refcell = cell;
+            this.refcell.style = "rgba(130, 30, 30, 0.5)";
+        },
+        contains : function(cell) {
+            return this.refcell == cell ||
+                this.cells.indexOf(cell) >= 0;
+        },
+        restoreStyle : function() {
+            this.forEach(function(cell) {
+                cell.style = null;
+            });
+        },
+        syncWidth : function() {
+            var refcell = this.refcell;
+            var s = refcell.t.scale;
+            this.cells.forEach(function(cell) {
+                var d = refcell.width() - cell.width();
+                cell.right += d/s;
+            });
+        },
+        syncHeight : function() {
+            var refcell = this.refcell;
+            var s = refcell.t.scale;
+            this.cells.forEach(function(cell) {
+                var d = refcell.height() - cell.height();
+                cell.bottom += d/s;
+            });
+        },
+        syncSize : function() {
+            var refcell = this.refcell;
+            this.cells.forEach(function(cell) {
+                cell.right = refcell.right;
+                cell.bottom = refcell.bottom;
+            });
+        },
+        verticalAlign : function() {
+            var refcell = this.refcell;
+            this.cells.forEach(function(cell) {
+                var d = refcell.left - cell.left;
+                cell.left = refcell.left;
+                cell.right += d;
+            });
+        },
+        horizontalAlign : function() {
+            var refcell = this.refcell;
+            this.cells.forEach(function(cell) {
+                var d = refcell.top - cell.top;
+                cell.top = refcell.top;
+                cell.bottom += d;
+            });
+        },
+        forEach : function(fn) {
+            fn(this.refcell);
+            this.cells.forEach(fn);
+        },
+    }
+
     function Image(image, args) {
         this.data = image;
         this._x = args.x || 0;
@@ -328,5 +431,6 @@
         Transformation : Transformation,
         Modect : Modect,
         ActionHistory : ActionHistory,
+        MultiCell : MultiCell,
     }
 })(this);

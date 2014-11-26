@@ -26,7 +26,7 @@
         transformation = new types.Transformation();
         modect = new types.Modect();
         spritePreview = new SpritePreview(cells, {
-            fps : 10,
+            fps : 1,
         });
 
         initCanvas();
@@ -145,6 +145,15 @@
                 activeButton.classList.add("active");
             }
         });
+
+        var fpsInput = toolbar.querySelector(".preview-fps");
+        fpsInput.onkeyup = function() {
+            console.log(this.value);
+            var n = this.value;
+            if (!Number.isNaN(n))
+                spritePreview.setFPS(n);
+
+        }
     }
 
     function loadImage(file, fn) {
@@ -588,13 +597,16 @@
 
     function SpritePreview(cells, args) {
         args = args || {};
-        this.frame = 1 / (args.fps || 30);
+        this.setFPS(args.fps||30);
         this.cells = cells;
         this.index = 0;
         this.lastUpdate = +new Date();
     }
 
     SpritePreview.prototype = {
+        setFPS : function(fps) {
+            this.frame = 1 / (fps||0);
+        },
         update : function() {
             var now = +new Date;
             var d = (now - this.lastUpdate)/1000;

@@ -353,7 +353,8 @@
                 var s = transformation.scale;
                 var dx = this.dx / s;
                 var dy = this.dy / s;
-                actionHistory.done(action.ModifyCell(scell, dy, dx, dx, dy));
+                if (dx !== 0 || dy != 0)
+                    actionHistory.done(action.ModifyCell(scell, dy, dx, dx, dy));
                 this.lastPos = null;
             },
             mousemove : function(e) {
@@ -392,7 +393,7 @@
                     var dl = c2.left   - c1.left;
                     var dr = c2.right  - c1.right;
                     var db = c2.bottom - c1.bottom;
-                    if (dt + dl + dr + db !== 0)
+                    if (dt!=0 && dl!=0 && dr!=0 && db!=0)
                         actionHistory.done(action.ModifyCell(scell, dt, dl, dr, db));
                 }
             },

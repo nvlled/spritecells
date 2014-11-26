@@ -38,6 +38,7 @@
         initButtons();
         initToolbar();
         initImageLoader();
+        loadPageState();
 
         var handler = modect.set.bind(modect);
         root.addEventListener("mousedown", handler);
@@ -46,18 +47,27 @@
         root.addEventListener("keydown", handler);
         root.addEventListener("keyup", handler);
 
+        startLoop();
+
         // Save page state every N seconds
         //setInterval(savePageState, 10000);
     }
 
+    var loopStarted = false;
     function startLoop() {
+        if (loopStarted)
+            return;
+
         var pcontext = previewCanvas.getContext("2d");
         drawLoop();
         function drawLoop(dt) {
             // Throttle loop as well
             if (modect.modified()) {
                 clearCanvas(canvas);
-                image.draw(context);
+
+                if (image)
+                    image.draw(context);
+
                 inputState.draw(context);
                 cells.forEach(function(cell, i) {
                     cell.draw(context, null, i);
@@ -66,7 +76,7 @@
             }
 
             clearCanvas(previewCanvas);
-            if (enablePreview) {
+            if (enablePreview && image) {
                 spritePreview.update();
                 spritePreview.draw(pcontext, 0, 0);
             }
@@ -96,13 +106,20 @@
     function initImageLoader() {
         var fileInput = document.querySelector("#fileInput");
         fileInput.onchange = function() {
+            if (cells.length > 0 && confirm("Discard cells?")) {
+                cells.splice(0, cells.length);
+            }
             loadImage(fileInput.files[0], function(img) {
                 image = img;
-                loadPageState();
-                startLoop();
+                transformation.x = 10;
+                transformation.y = 10;
+                modect.set();
             });
         }
-        fileInput.onchange();
+        loadImage(fileInput.files[0], function(img) {
+            image = img;
+            modect.set();
+        });
     }
 
     function initHandlers() {

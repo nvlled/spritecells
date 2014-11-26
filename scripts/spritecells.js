@@ -54,10 +54,9 @@
                 context.clearRect(0, 0, canvas.width, canvas.height);
                 image.draw(context);
                 inputState.draw(context);
-                cells.forEach(function(cell) {
-                    cell.draw(context);
+                cells.forEach(function(cell, i) {
+                    cell.draw(context, null, i);
                 });
-                // TODO: draw borders around the image
             }
             spritePreview.update();
             spritePreview.draw(context, 0, 0);
@@ -244,7 +243,7 @@
                     this.cell = null;
                     return;
                 }
-                this.cell.label = "cell-"+cells.length;
+                this.cell.label = "cell";
                 this.cell.sortPoints();
                 cells.push(this.cell);
                 actionHistory.done(action.CreateCell(this.cell));

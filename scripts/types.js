@@ -38,7 +38,7 @@
                          this.width(), this.height());
             context.font = "30px"
             context.strokeStyle = "#111";
-            context.strokeText(this.label,
+            context.strokeText(this.label+(i||""),
                         this.x(),
                         this.y());
         },

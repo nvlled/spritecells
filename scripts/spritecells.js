@@ -7,6 +7,7 @@
 
     var fileInput;
     var canvas;
+    var previewCanvas;
     var context;
     var inputState;
     var actionHistory;
@@ -19,14 +20,17 @@
     var LSKEY = "spritecells";
     var MINCELL_SIZE = 15;
 
+    var enablePreview = true;
+
     var modect;
     function load() {
         actionHistory = new types.ActionHistory();
         root.hist = actionHistory;
         transformation = new types.Transformation();
         modect = new types.Modect();
+
         spritePreview = new SpritePreview(cells, {
-            fps : 1,
+            fps : 5,
         });
 
         initCanvas();
@@ -47,11 +51,12 @@
     }
 
     function startLoop() {
+        var pcontext = previewCanvas.getContext("2d");
         drawLoop();
         function drawLoop(dt) {
             // Throttle loop as well
             if (modect.modified()) {
-                context.clearRect(0, 0, canvas.width, canvas.height);
+                clearCanvas(canvas);
                 image.draw(context);
                 inputState.draw(context);
                 cells.forEach(function(cell, i) {
@@ -59,21 +64,33 @@
                 });
 
             }
-            spritePreview.update();
-            spritePreview.draw(context, 0, 0);
+
+            clearCanvas(previewCanvas);
+            if (enablePreview) {
+                spritePreview.update();
+                spritePreview.draw(pcontext, 0, 0);
+            }
 
             modect.clear();
             mozRequestAnimationFrame(drawLoop);
         }
     }
 
+    function clearCanvas(canvas) {
+        var context = canvas.getContext("2d");
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
     function initCanvas() {
-        canvas = document.querySelector("canvas");
+        canvas = document.querySelector("canvas.main");
         if (!canvas)
             throw "no canvas found";
         canvas.width = root.screen.width*0.90;
-        canvas.height = root.screen.height*0.70;
+        canvas.height = root.screen.height*0.50;
         context = canvas.getContext("2d");
+
+        previewCanvas = document.querySelector("canvas.preview");
+        previewCanvas.width = root.screen.width*0.90;
     }
 
     function initImageLoader() {
@@ -146,7 +163,7 @@
             }
         });
 
-        var fpsInput = toolbar.querySelector(".preview-fps");
+        var fpsInput = document.querySelector("#preview-toolbar .fps");
         fpsInput.onkeyup = function() {
             console.log(this.value);
             var n = this.value;
@@ -154,6 +171,13 @@
                 spritePreview.setFPS(n);
 
         }
+        fpsInput.onkeyup();
+
+        var previewToggle = document.querySelector("#preview-toolbar .toggle");
+        previewToggle.onchange = function() {
+            enablePreview = previewToggle.checked;
+        }
+        enablePreview = previewToggle.checked;
     }
 
     function loadImage(file, fn) {

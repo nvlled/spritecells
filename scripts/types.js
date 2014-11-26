@@ -295,6 +295,7 @@
                 var node = this.node;
                 node.addEventListener("mousedown", handler.mousedown);
                 node.addEventListener("mouseup", handler.mouseup);
+                node.addEventListener("mouseout", handler.mouseup);
                 node.addEventListener("mousemove", handler.mousemove);
                 root.addEventListener("keydown", handler.keydown);
                 root.addEventListener("keyup", handler.keyup);

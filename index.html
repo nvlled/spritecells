@@ -21,11 +21,13 @@
     <button class="modify-cell">Modify cell</button>
     <button class="undo">Undo</button>
     <button class="redo">Redo</button>
-    <span>
-        Preview fps: <input size="1" class="preview-fps" />
-    </span>
 </div>
-<canvas>
-</canvas>
+<canvas class="main"></canvas>
+
+<div id="preview-toolbar">
+    <span>Enable: <input class="toggle" type="checkbox" checked="true"/></span>
+    Preview fps: <input size="1" class="fps" value="10"/>
+</div>
+<canvas class="preview"></canvas>
 </body>
 </html>

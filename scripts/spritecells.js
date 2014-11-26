@@ -107,7 +107,7 @@
         var fileInput = document.querySelector("#fileInput");
         fileInput.onchange = function() {
             if (cells.length > 0 && confirm("Discard cells?")) {
-                cells.splice(0, cells.length);
+                clearCells();
             }
             loadImage(fileInput.files[0], function(img) {
                 image = img;
@@ -136,7 +136,7 @@
             if (cells.length > 0) {
                 var yes = confirm("Clear all cells?");
                 if (yes) {
-                    cells = [];
+                    clearCells();
                     output.value = "";
                 }
             } else {
@@ -749,6 +749,10 @@
             }
         }
         return null;
+    }
+
+    function clearCells() {
+        cells.splice(0, cells.length);
     }
 
     function handleKeys(e) {

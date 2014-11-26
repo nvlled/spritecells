@@ -277,15 +277,29 @@
         return util.bind({
             selectedCell : null,
             lastPos : null,
+            dx : 0,
+            dy : 0,
             mousedown : function(e) {
                 var pos = eToCanvas(e);
                 var cell = getCellOnPoint(pos);
                 if (cell) {
                     this.selectedCell = cell;
                     this.lastPos = pos;
+                    this.origin = {
+                        x : cell.x(),
+                        y : cell.y(),
+                    };
                 }
             },
             mouseup : function(e) {
+                var scell = this.selectedCell;
+                if (!scell)
+                    return;
+
+                var s = transformation.scale;
+                var dx = this.dx / s;
+                var dy = this.dy / s;
+                actionHistory.done(action.ModifyCell(scell, dy, dx, dx, dy));
                 this.lastPos = null;
             },
             mousemove : function(e) {
@@ -296,7 +310,12 @@
                 if (this.lastPos) {
                     var dx = pos.x - this.lastPos.x;
                     var dy = pos.y - this.lastPos.y;
+                    this.dx += dx;
+                    this.dy += dy;
                     scell.move(dx, dy);
+                } else {
+                    this.dx = 0;
+                    this.dy = 0;
                 }
                 this.lastPos = pos;
             },
@@ -307,10 +326,21 @@
         return util.bind({
             selectedCell : null,
             lastPos : null,
+            origin : null,
             mouseup : function(e) {
                 this.lastPos = null;
                 if (this.selectedCell) {
                     this.selectedCell.sortPoints();
+
+                    var scell = this.selectedCell;
+                    var c1 = this.origin;
+                    var c2 = scell.refcell;
+                    var dt = c2.top    - c1.top;
+                    var dl = c2.left   - c1.left;
+                    var dr = c2.right  - c1.right;
+                    var db = c2.bottom - c1.bottom;
+                    if (dt + dl + dr + db !== 0)
+                        actionHistory.done(action.ModifyCell(scell, dt, dl, dr, db));
                 }
             },
             mousedown : function(e) {
@@ -329,8 +359,10 @@
                 if (this.lastPos) {
                     var dx = pos.x - this.lastPos.x;
                     var dy = pos.y - this.lastPos.y;
-                    var s = transformation.scale;
                     this.selectedCell.transform(0, 0, dx, dy);
+                } else {
+                    this.origin =
+                        util.select(scell.refcell, ["top", "left", "right", "bottom"]);
                 }
                 this.lastPos = pos;
             },

@@ -143,8 +143,12 @@
     }
 
     MultiCell.prototype = {
-        x : function() { },
-        y : function() { },
+        x : function() {
+            return this.refcell.x();
+        },
+        y : function() {
+            return this.refcell.y();
+        },
         move : function(dx, dy) {
             this.forEach(function(cell) {
                 cell.move(dx, dy);

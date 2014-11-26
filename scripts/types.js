@@ -32,10 +32,12 @@
         height: function() {
             return this.t.scale * (this.bottom - this.top);
         },
-        draw: function(context, style) {
+        draw: function(context, style, i) {
             context.fillStyle = style || this.style || "rgba(0, 120, 0, 0.5)";
             context.fillRect(this.x(), this.y(),
                          this.width(), this.height());
+            context.strokeStyle = "yellow";
+            context.strokeRect(this.x(), this.y(), this.width(), this.height());
             context.font = "30px"
             context.strokeStyle = "#111";
             context.strokeText(this.label+(i||""),
@@ -257,6 +259,8 @@
                               image.width, image.height,
                               this.x(), this.y(),
                               this.width(), this.height());
+            context.strokeStyle = "white";
+            context.strokeRect(this.x(), this.y(), this.width(), this.height());
         },
         move : function(dx, dy) { this._x += dx; this._y += dy },
         moveAt : function(x, y) { this._x = x  ; this._y = y },

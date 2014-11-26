@@ -57,6 +57,7 @@
                 cells.forEach(function(cell, i) {
                     cell.draw(context, null, i);
                 });
+
             }
             spritePreview.update();
             spritePreview.draw(context, 0, 0);
@@ -71,7 +72,7 @@
         if (!canvas)
             throw "no canvas found";
         canvas.width = root.screen.width*0.90;
-        canvas.height = root.screen.height*0.90;
+        canvas.height = root.screen.height*0.70;
         context = canvas.getContext("2d");
     }
 
@@ -327,6 +328,7 @@
         });
     }
 
+    // TODO : change scope of selectedCell
     function cellRegionInputHandler() {
         return util.bind({
             region : null,

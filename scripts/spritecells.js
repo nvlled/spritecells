@@ -554,16 +554,30 @@
                 }
             },
             keyup : function(e) {
-                if (e.key === "r")
+                var scell = selectedCell;
+                if (e.key === "r") {
                     this.resize = false;
-                else if (e.key === "Shift")
+                } else if (e.key === "Shift") {
                     this.addCell = false;
+                } else if (e.key === "Right" && e.shiftKey && scell) {
+                    var cell = scell.refcell.copyRight();
+                    scell.restoreStyle();
+                    selectedCell = new types.MultiCell(cell);
+                    cells.push(cell);
+                    actionHistory.done(action.CreateCell(cell));
+                } else if (e.key === "Down" && e.shiftKey && scell) {
+                    var cell = scell.refcell.copyDown();
+                    scell.restoreStyle();
+                    selectedCell = new types.MultiCell(cell);
+                    cells.push(cell);
+                    actionHistory.done(action.CreateCell(cell));
+                }
             },
             keydown : function(e) {
                 this.resize = e.key === "r";
                 this.addCell = e.key === "Shift";
 
-                var scell = this.selectedCell;
+                var scell = selectedCell;
                 if (e.key === "y" && scell) {
                     scell.horizontalAlign();
                 } else if (e.key === "x" && scell) {
@@ -573,20 +587,14 @@
                 } else if (e.key === "h" && scell) {
                     scell.syncHeight();
                 } else if (e.key === "Del" && scell) {
+                    var preDelete = cells.slice(0);
                     scell.forEach(function(cell) {
                         arrays.remove(cells, cell);
                     });
-                    this.setSelectedCell(null);
-                } else if (e.key === "Right" && e.shiftKey && scell) {
-                    var cell = scell.refcell.copyRight();
-                    scell.restoreStyle();
-                    this.setSelectedCell(new types.MultiCell(cell));
-                    cells.push(cell);
-                } else if (e.key === "Down" && e.shiftKey && scell) {
-                    var cell = scell.refcell.copyDown();
-                    scell.restoreStyle();
-                    this.setSelectedCell(new types.MultiCell(cell));
-                    cells.push(cell);
+                    var postDelete = cells.slice(0);
+
+                    actionHistory.done(action.DeleteCells(preDelete, postDelete));
+                    selectedCell = null;
                 } else if (e.keyCode == 61) {
                     transformation.zoom(0.2);
                 } else if (e.keyCode == 173) {
@@ -644,14 +652,20 @@
                 },
             }
         },
-        DeleteCell : function(index, cell) {
+        DeleteCells : function(preDelete, postDelete) {
             return {
                 name : "delete-cell",
                 undo : function() {
-                    arrays.insertAt(cells, index, cell);
+                    clearCells();
+                    preDelete.forEach(function(cell) {
+                        cells.push(cell);
+                    });
                 },
                 redo : function() {
-                    arrays.remove(cells, cell);
+                    clearCells();
+                    postDelete.forEach(function(cell) {
+                        cells.push(cell);
+                    });
                 },
             }
         },

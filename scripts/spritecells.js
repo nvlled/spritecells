@@ -486,6 +486,16 @@
                         arrays.remove(cells, cell);
                     });
                     this.setSelectedCell(null);
+                } else if (e.key === "Right" && e.shiftKey && scell) {
+                    var cell = scell.refcell.copyRight();
+                    scell.restoreStyle();
+                    this.setSelectedCell(new types.MultiCell(cell));
+                    cells.push(cell);
+                } else if (e.key === "Down" && e.shiftKey && scell) {
+                    var cell = scell.refcell.copyDown();
+                    scell.restoreStyle();
+                    this.setSelectedCell(new types.MultiCell(cell));
+                    cells.push(cell);
                 } else if (e.keyCode == 61) {
                     transformation.zoom(0.2);
                 } else if (e.keyCode == 173) {

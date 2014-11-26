@@ -35,8 +35,8 @@
 
         initCanvas();
         initHandlers();
-        initButtons();
         initToolbar();
+        initButtons();
         initImageLoader();
         loadPageState();
 
@@ -156,9 +156,14 @@
         var btnModifyCell = toolbar.querySelector("button.modify-cell");
         var btnUndo = toolbar.querySelector("button.undo");
         var btnRedo = toolbar.querySelector("button.redo");
+        var btnZoomIn = toolbar.querySelector("button.zoom-in");
+        var btnZoomOut = toolbar.querySelector("button.zoom-out");
 
         var genBtn = document.querySelector("#gen-btn");
         genBtn.onclick = generateJSON;
+
+        btnZoomIn.onclick = function() { transformation.zoom(0.2) }
+        btnZoomOut.onclick = function() { transformation.zoom(-0.2) }
 
         btnImage.addEventListener("click", function(e) {
             inputState.set("image");

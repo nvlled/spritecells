@@ -11,6 +11,7 @@
     var inputState;
     var actionHistory;
 
+    var spritePreview;
     var transformation;
     var image;
     var cells = [];
@@ -24,6 +25,9 @@
         root.hist = actionHistory;
         transformation = new types.Transformation();
         modect = new types.Modect();
+        spritePreview = new SpritePreview(cells, {
+            fps : 10,
+        });
 
         initCanvas();
         initHandlers();
@@ -55,6 +59,9 @@
                 });
                 // TODO: draw borders around the image
             }
+            spritePreview.update();
+            spritePreview.draw(context, 0, 0);
+
             modect.clear();
             mozRequestAnimationFrame(drawLoop);
         }
@@ -564,6 +571,47 @@
                     var s = transformation.scale;
                     cell.transform(dt*s, dl*s, dr*s, db*s);
                 },
+            }
+        },
+    }
+
+    function SpritePreview(cells, args) {
+        args = args || {};
+        this.frame = 1 / (args.fps || 30);
+        this.cells = cells;
+        this.index = 0;
+        this.lastUpdate = +new Date();
+    }
+
+    SpritePreview.prototype = {
+        update : function() {
+            var now = +new Date;
+            var d = (now - this.lastUpdate)/1000;
+            if (d >= this.frame) {
+                var len = this.cells.length;
+                this.index++;
+                if (this.index >= this.cells.length)
+                    this.index = 0;
+                this.lastUpdate = now;
+            }
+        },
+        draw : function(context, destX, destY) {
+            var cell = this.cells[this.index];
+            if (cell) {
+                var w = Math.min(Math.abs(cell.right - cell.left), image.data.width);
+                var h = Math.min(Math.abs(cell.bottom - cell.top), image.data.height);
+
+                var x = Math.max(cell.left - image._x, 0);
+                var y = Math.max(cell.top - image._y, 0);
+
+                context.strokeRect(destX, destY, cell.width(), cell.height());;
+                if (cell.width() >= 0 && cell.height() >= 0) {
+                    context.drawImage(
+                        image.data,
+                        x, y,
+                        w, h,
+                        destX, destY, cell.width(), cell.height());
+                }
             }
         },
     }

@@ -43,7 +43,13 @@
                         this.y());
         },
         clone: function() {
-            return new Cell(this);
+            var cell = new Cell(this.label, {});
+            cell.top = this.top;
+            cell.left = this.left;
+            cell.right = this.right;
+            cell.bottom = this.bottom;
+            cell.t = this.t;
+            return cell;
         },
         copyRight: function() {
             var clone = this.clone();

@@ -115,10 +115,15 @@
     function initButtons() {
         var clearBtn = document.querySelector("#clear-btn");
         clearBtn.addEventListener("click", function() {
+            var output = document.querySelector("#output");
             if (cells.length > 0) {
                 var yes = confirm("Clear all cells?");
-                if (yes)
+                if (yes) {
                     cells = [];
+                    output.value = "";
+                }
+            } else {
+                output.value = "";
             }
         });
         var buttons = document.querySelectorAll("button");
@@ -134,6 +139,9 @@
         var btnModifyCell = toolbar.querySelector("button.modify-cell");
         var btnUndo = toolbar.querySelector("button.undo");
         var btnRedo = toolbar.querySelector("button.redo");
+
+        var genBtn = document.querySelector("#gen-btn");
+        genBtn.onclick = generateJSON;
 
         btnImage.addEventListener("click", function(e) {
             inputState.set("image");
@@ -649,6 +657,22 @@
                 },
             }
         },
+    }
+
+    function generateJSON() {
+        var output = document.querySelector("#output");
+        var w = image.data.width;
+        var h = image.data.height;
+        var cells_ = cells.map(function(cell) {
+            return {
+                x : Math.max(truncate(cell.left), 0),
+                y : Math.max(truncate(cell.top), 0),
+                width : Math.min(truncate(cell.bottom - cell.top), w),
+                height : Math.min(truncate(cell.right - cell.left), h),
+            }
+        });
+        output.value = JSON.stringify(cells_);
+        function truncate(n) { return +n.toFixed(2) }
     }
 
     function SpritePreview(cells, args) {

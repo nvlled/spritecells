@@ -12,6 +12,7 @@
     var inputState;
     var actionHistory;
 
+    var selectedCell;
     var spritePreview;
     var transformation;
     var image;
@@ -329,7 +330,6 @@
 
     function cellMoveInputHandler() {
         return util.bind({
-            selectedCell : null,
             lastPos : null,
             dx : 0,
             dy : 0,
@@ -337,7 +337,7 @@
                 var pos = eToCanvas(e);
                 var cell = getCellOnPoint(pos);
                 if (cell) {
-                    this.selectedCell = cell;
+                    selectedCell = cell;
                     this.lastPos = pos;
                     this.origin = {
                         x : cell.x(),
@@ -346,7 +346,7 @@
                 }
             },
             mouseup : function(e) {
-                var scell = this.selectedCell;
+                var scell = selectedCell;
                 if (!scell)
                     return;
 
@@ -358,7 +358,7 @@
             },
             mousemove : function(e) {
                 var pos = eToCanvas(e);
-                var scell = this.selectedCell;
+                var scell = selectedCell;
                 if (!scell)
                     return;
                 if (this.lastPos) {
@@ -378,15 +378,14 @@
 
     function cellResizeInputHandler() {
         return util.bind({
-            selectedCell : null,
             lastPos : null,
             origin : null,
             mouseup : function(e) {
                 this.lastPos = null;
-                if (this.selectedCell) {
-                    this.selectedCell.sortPoints();
+                if (selectedCell) {
+                    selectedCell.sortPoints();
 
-                    var scell = this.selectedCell;
+                    var scell = selectedCell;
                     var c1 = this.origin;
                     var c2 = scell.refcell;
                     var dt = c2.top    - c1.top;
@@ -401,11 +400,11 @@
                 var pos = eToCanvas(e);
                 var cell = getCellOnPoint(pos);
                 if (cell) {
-                    this.selectedCell = cell;
+                    selectedCell = cell;
                 }
             },
             mousemove : function(e) {
-                var scell = this.selectedCell;
+                var scell = selectedCell;
                 if (!scell )
                     return;
 
@@ -413,7 +412,7 @@
                 if (this.lastPos) {
                     var dx = pos.x - this.lastPos.x;
                     var dy = pos.y - this.lastPos.y;
-                    this.selectedCell.transform(0, 0, dx, dy);
+                    selectedCell.transform(0, 0, dx, dy);
                 } else {
                     this.origin =
                         util.select(scell.refcell, ["top", "left", "right", "bottom"]);
@@ -423,11 +422,9 @@
         });
     }
 
-    // TODO : change scope of selectedCell
     function cellRegionInputHandler() {
         return util.bind({
             region : null,
-            selectedCell : null,
             draw : function(context) {
                 if (this.region) {
                     var r = this.region;
@@ -478,7 +475,7 @@
                 var cells = this.getEnclosedCells();
                 if (cells.length > 0) {
                     var multicell = types.MultiCell.create(cells);
-                    this.selectedCell = multicell;
+                    selectedCell = multicell;
                 }
             },
             mousemove : function(e) {
@@ -498,7 +495,6 @@
     function cellModifyInputHandler() {
         var identity = function() {};
         return util.bind({
-            selectedCell : null,
             subHandler : null,
             resize : false,
             addCell : false,
@@ -520,9 +516,9 @@
                 var handler;
                 if (!cell) {
                     handler  = this.cellRegion;
-                    if (handler.selectedCell) {
-                        handler.selectedCell.restoreStyle();
-                        handler.selectedCell = null;
+                    if (selectedCell) {
+                        selectedCell.restoreStyle();
+                        selectedCell = null;
                     }
                     handler.mousedown(e);
                 } else {
@@ -531,7 +527,7 @@
                     else
                         handler = this.cellMove;
 
-                    var scell = this.selectedCell;
+                    var scell = selectedCell;
                     if (scell && scell.contains(cell)) {
                         scell.setReference(cell);
                     } else {
@@ -542,7 +538,7 @@
                             scell = new types.MultiCell(cell);
                         }
                     }
-                    this.setSelectedCell(scell);
+                    selectedCell = scell;
                 }
                 this.subHandler = handler;
             },
@@ -554,7 +550,6 @@
                 var h = this.subHandler;
                 if (h) {
                     h.mouseup(e);
-                    this.selectedCell = h.selectedCell;
                     this.subHandler = null;
                 }
             },
@@ -598,12 +593,6 @@
                     transformation.zoom(-0.2);
                 }
             },
-            setSelectedCell : function(cell) {
-                this.selectedCell = cell;
-                this.cellResize.selectedCell = cell;
-                this.cellMove.selectedCell = cell;
-                this.cellRegion.selectedCell = cell;
-            }
         });
     }
 

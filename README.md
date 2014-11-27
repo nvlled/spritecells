@@ -19,3 +19,4 @@ and less bug-infested when immutability is used.
 ## TODO
 - Fix undo
 - Make interface less crap
+- Fix/Improve saving of page state

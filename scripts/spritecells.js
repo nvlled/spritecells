@@ -303,6 +303,8 @@
             mouseup : function(e) {
                 var pos = eToCanvas(e);
                 this.isMouseDown = false;
+                if (!this.cell)
+                    return;
                 if (this.cell.width() <= MINCELL_SIZE ||
                     this.cell.height() <= MINCELL_SIZE) {
                     this.cell = null;

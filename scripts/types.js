@@ -128,11 +128,13 @@
         this.refcell = refcell;
         this.cells = cells || [];
 
-        this.refcell.style = "rgba(130, 30, 30, 0.5)";
+        this.refcell.style = MultiCell.REFCELL_STYLE;
         this.cells.forEach(function(cell) {
-            cell.style = "rgba(130, 50, 50, 0.5)";
+            cell.style = MultiCell.CELL_STYLE;
         });
     }
+    MultiCell.REFCELL_STYLE = "rgba(200, 150, 50, 0.7)";
+    MultiCell.CELL_STYLE = "rgba(200, 50, 50, 0.7)";
 
     MultiCell.create = function(cells) {
         cells.sort(function(c1, c2) {
@@ -170,16 +172,16 @@
             var i = this.cells.indexOf(cell);
             if (i >= 0) {
                 this.cells[i] = this.refcell;
-                this.cells[i].style = "rgba(130, 50, 50, 0.5)";
+                this.cells[i].style = MultiCell.CELL_STYLE;
             } else {
                 throw "shit";
             }
             this.refcell = cell;
-            this.refcell.style = "rgba(130, 30, 30, 0.5)";
+            this.refcell.style = MultiCell.REFCELL_STYLE;
         },
         add : function(cell) {
             this.cells.push(cell);
-            cell.style = "rgba(130, 50, 50, 0.5)";
+            cell.style = MultiCell.CELL_STYLE;
         },
         contains : function(cell) {
             return this.refcell == cell ||

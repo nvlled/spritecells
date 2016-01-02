@@ -48,6 +48,10 @@
         root.addEventListener("keydown", handler);
         root.addEventListener("keyup", handler);
 
+        root.addEventListener("keydown", function(e) {
+            console.log(e.key, " ", e.keyCode);
+        });
+
         startLoop();
 
         // Save page state every N seconds
@@ -83,7 +87,7 @@
             }
 
             modect.clear();
-            mozRequestAnimationFrame(drawLoop);
+            requestAnimationFrame(drawLoop);
         }
     }
 
@@ -562,18 +566,23 @@
                     this.resize = false;
                 } else if (e.key === "Shift") {
                     this.addCell = false;
-                } else if (e.key === "Right" && e.shiftKey && scell) {
-                    var cell = scell.refcell.copyRight();
-                    scell.restoreStyle();
-                    selectedCell = new types.MultiCell(cell);
-                    cells.push(cell);
-                    actionHistory.done(action.CreateCell(cell));
-                } else if (e.key === "Down" && e.shiftKey && scell) {
-                    var cell = scell.refcell.copyDown();
-                    scell.restoreStyle();
-                    selectedCell = new types.MultiCell(cell);
-                    cells.push(cell);
-                    actionHistory.done(action.CreateCell(cell));
+                } else if (e.shiftKey && scell) {
+                    var cell;
+                    if (e.key === "ArrowRight") {
+                        var cell = scell.refcell.copyRight();
+                    } else if (e.key === "ArrowLeft") {
+                        var cell = scell.refcell.copyLeft();
+                    } else if (e.key === "ArrowUp") {
+                        var cell = scell.refcell.copyUp();
+                    } else if (e.key === "ArrowDown") {
+                        var cell = scell.refcell.copyDown();
+                    }
+                    if (cell) {
+                        scell.restoreStyle();
+                        selectedCell = new types.MultiCell(cell);
+                        cells.push(cell);
+                        actionHistory.done(action.CreateCell(cell));
+                    }
                 }
             },
             keydown : function(e) {
@@ -589,7 +598,7 @@
                     scell.syncWidth();
                 } else if (e.key === "h" && scell) {
                     scell.syncHeight();
-                } else if (e.key === "Del" && scell) {
+                } else if (e.key === "Delete" && scell) {
                     var preDelete = cells.slice(0);
                     scell.forEach(function(cell) {
                         arrays.remove(cells, cell);
